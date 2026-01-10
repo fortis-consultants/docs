@@ -74,14 +74,9 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Back to website",
+          "href": "https://fortiseval.com",
+          "icon": "arrow-left"
         }
       ]
     }
@@ -99,7 +94,7 @@
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
+      "label": "Portal",
       "href": "https://portal.fortiseval.com"
     }
   },
