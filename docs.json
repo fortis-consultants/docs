@@ -1,11 +1,14 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "theme": "willow",
+  "name": "Fortis Evaluations Documentation",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#432dd7",
+    "light": "#615fff",
+    "dark": "#615fff"
+  },
+  "fonts": {
+    "family": "Geist"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -91,13 +94,13 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:support@fortiseval.com"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "href": "https://portal.fortiseval.com"
     }
   },
   "contextual": {
@@ -114,9 +117,10 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/fortiseval",
+      "linkedin": "https://www.linkedin.com/company/fortis-evaluations/",
+      "facebook": "https://www.facebook.com/fortiseval",
+      "instagram": "https://www.instagram.com/fortiseval"
     }
   }
 }
