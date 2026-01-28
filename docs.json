@@ -1,5 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
+  "openapi": ["/api-reference/openapi.json"],
   "theme": "willow",
   "name": "Fortis Evaluations Documentation",
   "colors": {
@@ -54,18 +55,44 @@
         "tab": "API reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
               "api-reference/introduction"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Ping",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/ping/index"
+            ]
+          },
+          {
+            "group": "Documents",
+            "pages": [
+              "api-reference/documents/get",
+              "api-reference/documents/download"
+            ]
+          },
+          {
+            "group": "Orders",
+            "pages": [
+              "api-reference/orders/list",
+              "api-reference/orders/get"
+            ]
+          },
+          {
+            "group": "Quotes",
+            "pages": [
+              "api-reference/quotes/list",
+              "api-reference/quotes/get"
+            ]
+          },
+          {
+            "group": "Users",
+            "pages": [
+              "api-reference/users/me",
+              "api-reference/users/list",
+              "api-reference/users/get"
             ]
           }
         ]

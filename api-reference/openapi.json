@@ -1,94 +1,50 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
+    "title": "Fortis Evaluations [Dev]",
+    "version": "0.0.1"
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://api.fortiseval.test/v1",
+      "description": "Live"
+    },
+    {
+      "url": "https://sandbox.fortiseval.com/v1",
+      "description": "Sandbox"
     }
   ],
   "security": [
     {
-      "bearerAuth": []
+      "http": []
     }
   ],
   "paths": {
-    "/plants": {
+    "/documents/{documentId}": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
+        "operationId": "documents.show",
+        "description": "Returns a specific document belonging to the authenticated user's account.",
+        "summary": "Get Document",
+        "tags": [
+          "Document"
+        ],
         "parameters": [
           {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
+            "name": "documentId",
+            "in": "path",
+            "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "`Document`",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/Document"
                 }
               }
             }
@@ -96,121 +52,1710 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/documents/{documentId}/download": {
+      "get": {
+        "operationId": "documents.download",
+        "description": "Returns a temporary download URL for the document file, valid for 1 hour.\nThe URL forces a download with the original filename.",
+        "summary": "Get Document Download URL",
+        "tags": [
+          "Document"
+        ],
         "parameters": [
           {
-            "name": "id",
+            "name": "documentId",
             "in": "path",
-            "description": "ID of plant to delete",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string"
+                    },
+                    "file_name": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "mime_type": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "expires_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "url",
+                    "file_name",
+                    "mime_type",
+                    "expires_at"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          }
+        }
+      }
+    },
+    "/orders": {
+      "get": {
+        "operationId": "orders.index",
+        "description": "Returns all orders belonging to the authenticated user's account.",
+        "summary": "List Orders",
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Available sorts are `created_at`, `number`, `status`, `total`, `completed_at`. You can sort by multiple options by separating them with a comma. To sort in descending order, use `-` sign in front of the sort, for example: `-created_at`.",
+            "schema": {
+              "type": "string",
+              "default": "-created_at"
+            }
+          },
+          {
+            "name": "filter[status]",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[number]",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[custom_reference]",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[team]",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated set of `OrderResource`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Order"
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "properties": {
+                        "first": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "last": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "prev": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "next": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "first",
+                        "last",
+                        "prev",
+                        "next"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "current_page": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "from": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 1
+                        },
+                        "last_page": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "links": {
+                          "type": "array",
+                          "description": "Generated paginator links.",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "url": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "active": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "url",
+                              "label",
+                              "active"
+                            ]
+                          }
+                        },
+                        "path": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Base path for paginator generated URLs."
+                        },
+                        "per_page": {
+                          "type": "integer",
+                          "description": "Number of items shown per page.",
+                          "minimum": 0
+                        },
+                        "to": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "description": "Number of the last item in the slice.",
+                          "minimum": 1
+                        },
+                        "total": {
+                          "type": "integer",
+                          "description": "Total number of items being paginated.",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "current_page",
+                        "from",
+                        "last_page",
+                        "links",
+                        "path",
+                        "per_page",
+                        "to",
+                        "total"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "links",
+                    "meta"
+                  ]
                 }
               }
             }
           }
         }
       }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
-        "requestBody": {
-          "description": "Plant added to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+    },
+    "/orders/{orderId}": {
+      "get": {
+        "operationId": "orders.show",
+        "description": "Returns a specific order belonging to the authenticated user's account.",
+        "summary": "Get Order",
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`Order`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
               }
             }
           }
-        },
+        }
+      }
+    },
+    "/ping": {
+      "get": {
+        "operationId": "ping",
+        "description": "This tests the validity of the API credentials provided and responds with `pong` if successful.",
+        "summary": "Ping Method",
+        "tags": [
+          "Ping"
+        ],
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "pong"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quotes": {
+      "get": {
+        "operationId": "quotes.index",
+        "description": "Returns all quotes belonging to the authenticated user's account, excluding pending quotes.",
+        "summary": "List Quotes",
+        "tags": [
+          "Quote"
+        ],
+        "parameters": [
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Available sorts are `created_at`, `number`, `status`, `expires_at`, `requested_at`. You can sort by multiple options by separating them with a comma. To sort in descending order, use `-` sign in front of the sort, for example: `-created_at`.",
+            "schema": {
+              "type": "string",
+              "default": "-created_at"
+            }
+          },
+          {
+            "name": "filter[status]",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[quote_type]",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[number]",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[team]",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated set of `QuoteResource`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Quote"
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "properties": {
+                        "first": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "last": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "prev": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "next": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "first",
+                        "last",
+                        "prev",
+                        "next"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "current_page": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "from": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 1
+                        },
+                        "last_page": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "links": {
+                          "type": "array",
+                          "description": "Generated paginator links.",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "url": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "active": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "url",
+                              "label",
+                              "active"
+                            ]
+                          }
+                        },
+                        "path": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Base path for paginator generated URLs."
+                        },
+                        "per_page": {
+                          "type": "integer",
+                          "description": "Number of items shown per page.",
+                          "minimum": 0
+                        },
+                        "to": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "description": "Number of the last item in the slice.",
+                          "minimum": 1
+                        },
+                        "total": {
+                          "type": "integer",
+                          "description": "Total number of items being paginated.",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "current_page",
+                        "from",
+                        "last_page",
+                        "links",
+                        "path",
+                        "per_page",
+                        "to",
+                        "total"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "links",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quotes/{quoteId}": {
+      "get": {
+        "operationId": "quotes.show",
+        "description": "Returns a specific quote belonging to the authenticated user's account.",
+        "summary": "Get Quote",
+        "tags": [
+          "Quote"
+        ],
+        "parameters": [
+          {
+            "name": "quoteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`Quote`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "operationId": "users.index",
+        "description": "Returns all users belonging to the authenticated user's account, with their teams.",
+        "summary": "List Account Users",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Available sorts are `created_at`, `first_name`, `last_name`, `email`. You can sort by multiple options by separating them with a comma. To sort in descending order, use `-` sign in front of the sort, for example: `-created_at`.",
+            "schema": {
+              "type": "string",
+              "default": "-created_at"
+            }
+          },
+          {
+            "name": "filter[status]",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[team]",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated set of `UserResource`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "properties": {
+                        "first": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "last": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "prev": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "next": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "first",
+                        "last",
+                        "prev",
+                        "next"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "current_page": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "from": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 1
+                        },
+                        "last_page": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "links": {
+                          "type": "array",
+                          "description": "Generated paginator links.",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "url": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "active": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "url",
+                              "label",
+                              "active"
+                            ]
+                          }
+                        },
+                        "path": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Base path for paginator generated URLs."
+                        },
+                        "per_page": {
+                          "type": "integer",
+                          "description": "Number of items shown per page.",
+                          "minimum": 0
+                        },
+                        "to": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "description": "Number of the last item in the slice.",
+                          "minimum": 1
+                        },
+                        "total": {
+                          "type": "integer",
+                          "description": "Total number of items being paginated.",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "current_page",
+                        "from",
+                        "last_page",
+                        "links",
+                        "path",
+                        "per_page",
+                        "to",
+                        "total"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "links",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/me": {
+      "get": {
+        "operationId": "user.me",
+        "description": "Returns the currently authenticated user.",
+        "summary": "Get Current User",
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "`User`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}": {
+      "get": {
+        "operationId": "users.show",
+        "description": "Returns a specific user belonging to the authenticated user's account, with their teams.",
+        "summary": "Get Account User",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`User`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
           }
         }
       }
     }
   },
   "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "securitySchemes": {
-      "bearerAuth": {
+      "http": {
         "type": "http",
         "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Cart": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier for the cart (e.g. cart_xxxxx)."
+          },
+          "number": {
+            "type": "string",
+            "description": "The cart UUID."
+          },
+          "status": {
+            "$ref": "#/components/schemas/CartStatus"
+          },
+          "payment_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_individual": {
+            "type": "boolean",
+            "description": "Whether this is an individual (non-business) order."
+          },
+          "turnaround_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TurnaroundType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "translation_preference_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TranslationPreferenceType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "physical_copy": {
+            "type": "boolean",
+            "description": "Whether a physical copy was requested."
+          },
+          "cc_emails": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "description": "CC email addresses for notifications.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subtotal": {
+            "type": "number",
+            "description": "The cart subtotal in dollars."
+          },
+          "total": {
+            "type": "number",
+            "description": "The cart total in dollars."
+          },
+          "last_activity_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "unsubscribed_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "paid_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "status",
+          "payment_status",
+          "is_individual",
+          "turnaround_type",
+          "translation_preference_type",
+          "physical_copy",
+          "cc_emails",
+          "subtotal",
+          "total",
+          "last_activity_at",
+          "unsubscribed_at",
+          "paid_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Cart"
+      },
+      "CartStatus": {
+        "type": "string",
+        "enum": [
+          "in_progress",
+          "abandoned",
+          "expired",
+          "completed"
+        ],
+        "title": "CartStatus"
+      },
+      "Document": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier for the document (e.g. doc_xxxxx)."
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The document title."
+          },
+          "document_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DocumentType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "document_category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DocumentCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "document_role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DocumentRole"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "file_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "file_ext": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The file extension (e.g. \"pdf\")."
+          },
+          "mime_type": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The MIME type (e.g. \"application/pdf\")."
+          },
+          "size": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "The file size in bytes."
+          },
+          "page_count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "The number of pages in the document."
+          },
+          "word_count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "The word count of the document."
+          },
+          "character_count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "The character count of the document."
+          },
+          "source_language_code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The ISO 639-1 language code of the source document."
+          },
+          "source_language": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The human-readable source language name."
+          },
+          "metadata": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "description": "AI-extracted document metadata.",
+            "items": {}
+          },
+          "analysis_completed_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "document_type",
+          "document_category",
+          "document_role",
+          "file_name",
+          "file_ext",
+          "mime_type",
+          "size",
+          "page_count",
+          "word_count",
+          "character_count",
+          "source_language_code",
+          "source_language",
+          "metadata",
+          "analysis_completed_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Document"
+      },
+      "DocumentCategory": {
+        "type": "string",
+        "enum": [
+          "vital",
+          "government",
+          "academic",
+          "financial",
+          "marketing",
+          "personal",
+          "professional",
+          "medical",
+          "legal",
+          "technical",
+          "identification",
+          "employment",
+          "immigration",
+          "property",
+          "intellectual_property",
+          "communication",
+          "research",
+          "security",
+          "military",
+          "certification",
+          "transportation",
+          "insurance",
+          "environmental",
+          "entertainment",
+          "cultural",
+          "other"
+        ],
+        "title": "DocumentCategory"
+      },
+      "DocumentRole": {
+        "type": "string",
+        "enum": [
+          "source",
+          "reference",
+          "translation",
+          "evaluation",
+          "course_evaluation",
+          "expert_letter",
+          "work_product",
+          "other"
+        ],
+        "title": "DocumentRole"
+      },
+      "DocumentType": {
+        "type": "string",
+        "enum": [
+          "credential_evaluation",
+          "translation",
+          "certified_translation",
+          "diploma",
+          "transcript",
+          "cv",
+          "professional_license",
+          "enrollment_report",
+          "id",
+          "passport",
+          "letter",
+          "recommendation_letter",
+          "expert_opinion_letter",
+          "work_experience_letter",
+          "admission_letter",
+          "portfolio",
+          "research_paper",
+          "certificate",
+          "birth_certificate",
+          "marriage_certificate",
+          "name_change_document",
+          "verification_letter",
+          "thesis",
+          "course_outline",
+          "background_check_report",
+          "medical_certificate",
+          "financial_statement",
+          "military_service_record",
+          "training_certificate",
+          "linkedin_profile",
+          "language_proficiency_certificate",
+          "deans_list_certificate",
+          "grade_report",
+          "academic_award",
+          "patent_document",
+          "membership_document",
+          "other"
+        ],
+        "title": "DocumentType"
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier for the order (e.g. ord_xxxxx)."
+          },
+          "number": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "quote_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The associated quote identifier."
+          },
+          "custom_reference": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "A custom reference provided by the customer."
+          },
+          "custom_metadata": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "description": "Custom metadata attached to the order.",
+            "items": {}
+          },
+          "total": {
+            "type": "integer",
+            "description": "The order total in cents."
+          },
+          "currency": {
+            "type": "string",
+            "description": "The currency code (e.g. \"usd\")."
+          },
+          "cart": {
+            "anyOf": [
+              {
+                "description": "The associated cart.",
+                "$ref": "#/components/schemas/Cart"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "documents": {
+            "type": "array",
+            "description": "The associated documents.",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            }
+          },
+          "intake_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "in_progress_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "on_hold_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "completed_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "status",
+          "custom_reference",
+          "custom_metadata",
+          "total",
+          "currency",
+          "intake_at",
+          "in_progress_at",
+          "on_hold_at",
+          "completed_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Order"
+      },
+      "OrderStatus": {
+        "type": "string",
+        "enum": [
+          "created",
+          "in_progress",
+          "awaiting_review",
+          "completed",
+          "refunded",
+          "cancelled"
+        ],
+        "title": "OrderStatus"
+      },
+      "PaymentStatus": {
+        "type": "string",
+        "enum": [
+          "paid",
+          "unpaid"
+        ],
+        "title": "PaymentStatus"
+      },
+      "Quote": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier for the quote (e.g. quot_xxxxx)."
+          },
+          "number": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/QuoteStatus"
+          },
+          "quote_type": {
+            "$ref": "#/components/schemas/QuoteType"
+          },
+          "requested_turnaround": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuoteTurnaroundCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tat_value": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "The turnaround time value."
+          },
+          "tat_range": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TurnaroundRange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "turnaround_label": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "A human-readable turnaround label."
+          },
+          "has_guaranteed_delivery": {
+            "type": "boolean",
+            "description": "Whether a guaranteed delivery date is set."
+          },
+          "guaranteed_delivery_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "total_cents": {
+            "type": "integer",
+            "description": "The total in cents, computed from quote items."
+          },
+          "total": {
+            "type": "string",
+            "description": "The formatted total (e.g. \"150.00\")."
+          },
+          "items": {
+            "type": "array",
+            "description": "The quote line items.",
+            "items": {
+              "$ref": "#/components/schemas/QuoteItem"
+            }
+          },
+          "cart": {
+            "anyOf": [
+              {
+                "description": "The associated cart.",
+                "$ref": "#/components/schemas/Cart"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "documents": {
+            "type": "array",
+            "description": "The associated documents.",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            }
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "requested_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "approved_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "canceled_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "status",
+          "quote_type",
+          "requested_turnaround",
+          "tat_value",
+          "tat_range",
+          "turnaround_label",
+          "has_guaranteed_delivery",
+          "guaranteed_delivery_at",
+          "total_cents",
+          "total",
+          "expires_at",
+          "requested_at",
+          "approved_at",
+          "canceled_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Quote"
+      },
+      "QuoteItem": {
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "type": "integer"
+          },
+          "price": {
+            "type": "integer",
+            "description": "The line item price in cents."
+          },
+          "subtotal": {
+            "type": "integer",
+            "description": "The line item subtotal in cents (price \u00d7 quantity)."
+          },
+          "currency": {
+            "type": "string",
+            "description": "The currency code (e.g. \"usd\")."
+          },
+          "service_name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The name of the service."
+          },
+          "service_code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The code of the service."
+          }
+        },
+        "required": [
+          "quantity",
+          "price",
+          "subtotal",
+          "currency"
+        ],
+        "title": "QuoteItem"
+      },
+      "QuoteStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "requested",
+          "awaiting_payment",
+          "approved",
+          "cancelled"
+        ],
+        "title": "QuoteStatus"
+      },
+      "QuoteTurnaroundCategory": {
+        "type": "string",
+        "enum": [
+          "standard",
+          "next_day",
+          "same_day",
+          "expedited"
+        ],
+        "title": "QuoteTurnaroundCategory"
+      },
+      "QuoteType": {
+        "type": "string",
+        "enum": [
+          "translation",
+          "academic_evaluation",
+          "expert_opinion_letter",
+          "perm_ad"
+        ],
+        "title": "QuoteType"
+      },
+      "Team": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier for the team."
+          },
+          "name": {
+            "type": "string"
+          },
+          "icon": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "color": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Whether this is the account's default team."
+          },
+          "role": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The authenticated user's role on this team."
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "color",
+          "description",
+          "is_default",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Team"
+      },
+      "TranslationPreferenceType": {
+        "type": "string",
+        "enum": [
+          "documents_in_english",
+          "client_provided",
+          "translation_service"
+        ],
+        "title": "TranslationPreferenceType"
+      },
+      "TurnaroundRange": {
+        "type": "string",
+        "enum": [
+          "hour",
+          "day",
+          "week",
+          "month"
+        ],
+        "title": "TurnaroundRange"
+      },
+      "TurnaroundType": {
+        "type": "string",
+        "enum": [
+          "standard",
+          "next_day",
+          "same_day",
+          "expedited"
+        ],
+        "title": "TurnaroundType"
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier for the user."
+          },
+          "email": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "middle_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "email_verified_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone_verified_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/UserStatus"
+          },
+          "timezone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The user's preferred timezone."
+          },
+          "locale": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The user's preferred locale."
+          },
+          "teams": {
+            "type": "array",
+            "description": "The teams the user belongs to.",
+            "items": {
+              "$ref": "#/components/schemas/Team"
+            }
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "first_name",
+          "middle_name",
+          "last_name",
+          "phone",
+          "email_verified_at",
+          "phone_verified_at",
+          "status",
+          "timezone",
+          "locale",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "User"
+      },
+      "UserStatus": {
+        "type": "string",
+        "enum": [
+          "active",
+          "inactive"
+        ],
+        "title": "UserStatus"
+      }
+    },
+    "responses": {
+      "ModelNotFoundException": {
+        "description": "Not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Error overview."
+                }
+              },
+              "required": [
+                "message"
+              ]
+            }
+          }
+        }
       }
     }
   }
