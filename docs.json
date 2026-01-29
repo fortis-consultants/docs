@@ -77,7 +77,8 @@
             "group": "Orders",
             "pages": [
               "api-reference/orders/list",
-              "api-reference/orders/get"
+              "api-reference/orders/get",
+              "api-reference/orders/update"
             ]
           },
           {

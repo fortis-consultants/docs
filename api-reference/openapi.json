@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "https://api.fortiseval.test/v1",
+      "url": "https://api.fortiseval.com/v1",
       "description": "Live"
     },
     {
@@ -339,6 +339,48 @@
                 }
               }
             }
+          }
+        }
+      },
+      "put": {
+        "operationId": "orders.update",
+        "description": "Updates the custom_reference and/or custom_metadata for an order.\nFor custom_metadata, keys are merged with existing data. Set a key to null to remove it.\nMaximum 64 keys allowed in custom_metadata.",
+        "summary": "Update Order",
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`Order`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
           }
         }
       }
@@ -1207,6 +1249,10 @@
             "type": "string",
             "description": "The unique identifier for the order (e.g. ord_xxxxx)."
           },
+          "url": {
+            "type": "string",
+            "description": "The URL to view this order in the Portal."
+          },
           "number": {
             "type": "string"
           },
@@ -1294,6 +1340,7 @@
         },
         "required": [
           "id",
+          "url",
           "number",
           "status",
           "custom_reference",
@@ -1335,6 +1382,10 @@
           "id": {
             "type": "string",
             "description": "The unique identifier for the quote (e.g. quot_xxxxx)."
+          },
+          "url": {
+            "type": "string",
+            "description": "The URL to view this quote in the Portal."
           },
           "number": {
             "type": "string"
@@ -1455,6 +1506,7 @@
         },
         "required": [
           "id",
+          "url",
           "number",
           "status",
           "quote_type",
@@ -1634,6 +1686,33 @@
         ],
         "title": "TurnaroundType"
       },
+      "UpdateOrderRequest": {
+        "type": "object",
+        "properties": {
+          "custom_reference": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "custom_metadata": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 1000
+            },
+            "maxItems": 64
+          }
+        },
+        "title": "UpdateOrderRequest"
+      },
       "User": {
         "type": "object",
         "properties": {
@@ -1738,6 +1817,36 @@
       }
     },
     "responses": {
+      "ValidationException": {
+        "description": "Validation error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Errors overview."
+                },
+                "errors": {
+                  "type": "object",
+                  "description": "A detailed description of each field that failed validation.",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "required": [
+                "message",
+                "errors"
+              ]
+            }
+          }
+        }
+      },
       "ModelNotFoundException": {
         "description": "Not found",
         "content": {
